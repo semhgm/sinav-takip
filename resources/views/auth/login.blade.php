@@ -92,7 +92,7 @@
                         </div>
                     </div>
                     <div class="mt-5 text-muted text-center">
-                        Hesabınız yok mu? <a href="#">Kayıt Olun</a>
+                        Hesabınız yok mu? <a href="{{route('register')}}">Kayıt Olun</a>
                     </div>
                 </div>
             </div>

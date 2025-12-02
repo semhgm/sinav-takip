@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +14,33 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+
+Route::get('home',[\App\Http\Controllers\Controller::class,'home'])->name('home')->middleware(['auth', 'verified']);
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+    Route::post('/register', [AuthController::class, 'register']);
+});
+
+// Çıkış İşlemi (Giriş Yapanlar için)
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+
+
+// ROL BAZLI PANEL GRUPLARI (Erişim Kontrollü)
+// Eğer tüm rotalarınız bu grupların içindeyse, başka bir şeye gerek yok.
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', function () {
+        return view('backend.pages.admin.dashboard');
+    })->name('dashboard');
+});
+Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->group(function () {
+    Route::get('/dashboard', function () {
+        return view('backend.pages.staff.dashboard');
+    })->name('dashboard');
+});
+Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
+    Route::get('/dashboard', function () {
+        return view('backend.pages.student.dashboard');
+    })->name('dashboard');
 });

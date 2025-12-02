@@ -1,88 +1,142 @@
 <div class="main-sidebar sidebar-style-2">
     <aside id="sidebar-wrapper">
         <div class="sidebar-brand">
-            <a href="#">
+            <a href="{{ route(auth()->user()->role . '.dashboard') }}">
                 <img alt="image" src="{{ asset('otika/assets/img/logo.png') }}" class="header-logo" />
-                <span class="logo-name">Otika</span>
+                <span class="logo-name">Sınav Takip</span>
             </a>
         </div>
 
         <ul class="sidebar-menu">
 
+            {{-- ********** GENEL DASHBOARD ********** --}}
             <li class="menu-header">Genel</li>
 
-            <li class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                <a href="#" class="nav-link">
+            <li class="{{ request()->routeIs(auth()->user()->role . '.dashboard') ? 'active' : '' }}">
+                {{-- Herkes kendi rolünün dashboard'una yönlendirilecek --}}
+                <a href="{{ route(auth()->user()->role . '.dashboard') }}" class="nav-link">
                     <i data-feather="monitor"></i><span>Dashboard</span>
                 </a>
             </li>
 
-            <li class="menu-header">Kurumsal</li>
+            {{-- ********** ADMIN MENÜSÜ ********** --}}
+            @if(auth()->user()->role === 'admin')
+                <li class="menu-header">Yönetim ve Tanımlamalar</li>
 
-            <li class="dropdown {{ request()->routeIs('admin.team.*') ? 'active' : '' }}">
-                <a href="#" class="menu-toggle nav-link has-dropdown">
-                    <i data-feather="users"></i><span>Hakkımda</span>
-                </a>
-                <ul class="dropdown-menu">
-                    <li class="{{ request()->routeIs('admin.team.index') ? 'active' : '' }}">
-                        <a class="nav-link" href="#">Ekip Üyeleri</a>
-                    </li>
-                </ul>
-            </li>
+                {{-- Sınav İşlemleri --}}
+                <li class="dropdown {{ request()->routeIs('admin.exams.*') ? 'active' : '' }}">
+                    <a href="#" class="menu-toggle nav-link has-dropdown">
+                        <i data-feather="clipboard"></i><span>Sınavlar</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li class="{{ request()->routeIs('admin.exams.index') ? 'active' : '' }}">
+                            <a class="nav-link" href="#">Tüm Sınavlar</a>
+                        </li>
+                        <li class="{{ request()->routeIs('admin.exams.create') ? 'active' : '' }}">
+                            <a class="nav-link" href="#">Yeni Sınav Ekle</a>
+                        </li>
+                    </ul>
+                </li>
 
-            <li class="{{ request()->routeIs('admin.service.*') ? 'active' : '' }}">
-                <a class="nav-link" href="#">
-                    <i data-feather="check-square"></i><span>Hizmetler</span>
-                </a>
-            </li>
+                {{-- Soru Yönetimi --}}
+                <li class="dropdown {{ request()->routeIs('admin.questions.*') ? 'active' : '' }}">
+                    <a href="#" class="menu-toggle nav-link has-dropdown">
+                        <i data-feather="help-circle"></i><span>Sorular</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li class="{{ request()->routeIs('admin.questions.index') ? 'active' : '' }}">
+                            <a class="nav-link" href="#">Tüm Sorular</a>
+                        </li>
+                        <li class="{{ request()->routeIs('admin.questions.categories.*') ? 'active' : '' }}">
+                            <a class="nav-link" href="#">Kategoriler</a>
+                        </li>
+                    </ul>
+                </li>
 
-            <li class="menu-header">Portfolyo</li>
+                {{-- Kullanıcı ve Rol Yönetimi --}}
+                <li class="dropdown {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                    <a href="#" class="menu-toggle nav-link has-dropdown">
+                        <i data-feather="users"></i><span>Kullanıcılar</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li class="{{ request()->routeIs('admin.users.index') ? 'active' : '' }}">
+                            <a class="nav-link" href="#">Tüm Kullanıcılar</a>
+                        </li>
+                        <li class="{{ request()->routeIs('admin.users.assign.staff') ? 'active' : '' }}">
+                            <a class="nav-link" href="#">Gözetmen/Staff Atama</a>
+                        </li>
+                    </ul>
+                </li>
 
-            <li class="dropdown {{ request()->routeIs('admin.portfolio.*') ? 'active' : '' }}">
-                <a href="#" class="menu-toggle nav-link has-dropdown">
-                    <i data-feather="briefcase"></i><span>Projeler</span>
-                </a>
-                <ul class="dropdown-menu">
-                    <li class="{{ request()->routeIs('admin.portfolio.category.*') ? 'active' : '' }}">
-                        <a class="nav-link" href="#">Kategoriler</a>
-                    </li>
+            @endif
 
-                    <li class="{{ request()->routeIs('admin.portfolio.index') || request()->routeIs('admin.portfolio.edit') ? 'active' : '' }}">
-                        <a class="nav-link" href="#">Tüm Projeler</a>
-                    </li>
 
-                    <li class="{{ request()->routeIs('admin.portfolio.create') ? 'active' : '' }}">
-                        <a class="nav-link" href="#">Yeni Proje Ekle</a>
-                    </li>
-                </ul>
-            </li>
+            {{-- ********** STAFF (GÖZETMEN/ÖĞRETMEN) MENÜSÜ ********** --}}
+            @if(auth()->user()->role === 'staff')
+                <li class="menu-header">Sınav Takip ve Gözetim</li>
 
-            <li class="menu-header">Blog & İçerik</li>
+                {{-- Canlı Takip --}}
+                <li class="{{ request()->routeIs('staff.live.monitor') ? 'active' : '' }}">
+                    <a class="nav-link" href="#">
+                        <i data-feather="video"></i><span>Canlı Sınav Takibi</span>
+                    </a>
+                </li>
 
-            <li class="dropdown {{ request()->routeIs('admin.blog.*') ? 'active' : '' }}">
-                <a href="#" class="menu-toggle nav-link has-dropdown">
-                    <i data-feather="file-text"></i><span>Blog İşlemleri</span>
-                </a>
-                <ul class="dropdown-menu">
-                    <li class="{{ request()->routeIs('admin.blog.category.*') ? 'active' : '' }}">
-                        <a class="nav-link" href="#">Kategoriler</a>
-                    </li>
-                    <li class="{{ request()->routeIs('admin.blog.tags.*') ? 'active' : '' }}">
-                        <a class="nav-link" href="#">Etiketler (Tags)</a>
-                    </li>
-                    <li class="{{ request()->routeIs('admin.blog.post.*') ? 'active' : '' }}">
-                        <a class="nav-link" href="#">Yazılar</a>
-                    </li>
-                    <li class="{{ request()->routeIs('admin.blog.comment.*') ? 'active' : '' }}">
-                        <a class="nav-link" href="#">Yorumlar</a>
-                    </li>
-                </ul>
-            </li>
+                {{-- İhlal Raporları --}}
+                <li class="{{ request()->routeIs('staff.violations.index') ? 'active' : '' }}">
+                    <a class="nav-link" href="#">
+                        <i data-feather="alert-triangle"></i><span>İhlal Raporları</span>
+                    </a>
+                </li>
 
-            <li class="menu-header">Site Bildirimleri</li>
+                {{-- Manuel Puanlama --}}
+                <li class="{{ request()->routeIs('staff.grading.index') ? 'active' : '' }}">
+                    <a class="nav-link" href="#">
+                        <i data-feather="edit-2"></i><span>Manuel Puanlama</span>
+                    </a>
+                </li>
+            @endif
 
-            <li class="{{ request()->routeIs('admin.contact.*') ? 'active' : '' }}">
-                <a class="nav-link" href="#"><i data-feather="mail"></i><span>Gelen Mesajlar</span></a>
+
+            {{-- ********** STUDENT (ÖĞRENCİ) MENÜSÜ ********** --}}
+            @if(auth()->user()->role === 'student')
+                <li class="menu-header">Sınavlar ve Sonuçlar</li>
+
+                {{-- Mevcut Sınavlar --}}
+                <li class="{{ request()->routeIs('student.exams.available') ? 'active' : '' }}">
+                    <a class="nav-link" href="#">
+                        <i data-feather="cast"></i><span>Mevcut Sınavlar</span>
+                    </a>
+                </li>
+
+                {{-- Sınav Geçmişi --}}
+                <li class="{{ request()->routeIs('student.exams.history') ? 'active' : '' }}">
+                    <a class="nav-link" href="#">
+                        <i data-feather="book-open"></i><span>Sınav Geçmişi</span>
+                    </a>
+                </li>
+
+                {{-- Sonuç ve Analiz --}}
+                <li class="{{ request()->routeIs('student.results.index') ? 'active' : '' }}">
+                    <a class="nav-link" href="#">
+                        <i data-feather="bar-chart-2"></i><span>Sonuçlarım</span>
+                    </a>
+                </li>
+            @endif
+
+            {{-- ********** ÇIKIŞ İŞLEMİ (HERKES İÇİN ORTAK) ********** --}}
+            <li class="menu-header">Oturum</li>
+
+            <li>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <a href="{{ route('logout') }}"
+                       onclick="event.preventDefault(); this.closest('form').submit();"
+                       class="nav-link text-danger">
+                        <i data-feather="log-out"></i>
+                        <span>Çıkış Yap</span>
+                    </a>
+                </form>
             </li>
 
         </ul>

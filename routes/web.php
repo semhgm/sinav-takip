@@ -38,6 +38,7 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
     Route::get('/dashboard', function () {
         return view('backend.pages.staff.dashboard');
     })->name('dashboard');
+    Route::resource('exams', App\Http\Controllers\Staff\ExamController::class);
 });
 Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
     Route::get('/dashboard', function () {

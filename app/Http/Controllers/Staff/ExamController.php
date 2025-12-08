@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Staff;
 use App\Http\Controllers\Controller;
 use App\Models\Exam;
 use App\Models\Question;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -170,5 +171,51 @@ class ExamController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+    public function assign(Exam $exam)
+    {
+        // Yetki Kontrolü
+        if ($exam->created_by !== auth()->id()) {
+            abort(403, 'Bu sınavı atama yetkiniz yok.');
+        }
+
+        // Sadece Öğrenci rolündeki kullanıcıları çekme
+        // Varsayım: User modelinizde 'role_id' veya benzeri bir alan var.
+        // Eğer rolleriniz ayrı bir tabloda yönetiliyorsa buna göre filtreleme yapmalısınız.
+        // Şimdilik sadece örnek bir filtreleme yapalım:
+        $students = User::where('role', 'student')->latest()->get(); // 3: Student rolü olsun
+
+        // Halihazırda atanmış öğrenci ID'lerini çekme (Eğer bir `exam_assignments` ilişkiniz varsa)
+        // Eğer `assignments()` ilişkisi Exam modelinizde tanımlıysa:
+        $assignedStudentIds = $exam->assignedUsers->pluck('user_id')->toArray();
+
+        return view('backend.pages.staff.exams.assign', compact('exam', 'students', 'assignedStudentIds'));
+    }
+    public function performAssignment(Request $request, Exam $exam)
+    {
+        // Yetki Kontrolü
+        if ($exam->created_by !== auth()->id()) {
+            abort(403, 'Bu sınavı atama yetkiniz yok.');
+        }
+
+        $validated = $request->validate([
+            'student_ids' => 'nullable|array',
+            'student_ids.*' => 'exists:users,id',
+        ]);
+
+        $studentIds = $validated['student_ids'] ?? [];
+
+        // Exam modelinizdeki `assignments()` ilişkisini kullanarak atamaları yönetelim.
+        // Modelde bu ilişkiyi tanımladığınızdan emin olun: `hasMany(ExamAssignment::class)`
+
+        // Eğer ExamAssignment bir pivot tablosu gibi davranıyorsa:
+        // Exam modelinize belongsToMany(User::class, 'exam_assignments', 'exam_id', 'user_id') ekleyin.
+        // Daha sonra sync kullanabilirsiniz:
+
+        // Varsayım: Exam modelinde `assignedUsers()` ilişkisi tanımlı.
+        $exam->assignedUsers()->sync($studentIds);
+        return redirect()
+            ->route('staff.exams.index')
+            ->with('success', 'Sınav, seçilen öğrencilere başarıyla atandı.');
     }
 }

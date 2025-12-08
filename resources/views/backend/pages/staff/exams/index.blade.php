@@ -53,13 +53,10 @@
                                                     {{-- Soru Ekleme Linki (Modül 4'e hazırlık) --}}
                                                     <a href="{{ route('staff.exams.edit', $exam->id) }}" class="btn btn-sm btn-info">Düzenle</a>
                                                     <a href="{{ route('staff.questions.create', $exam->id) }}" class="btn btn-sm btn-success">Soruları Ekle/Gör</a>
-                                                    {{-- Silme butonu formu (tercihen AJAX veya confirm ile) --}}
-                                                    {{-- <form action="{{ route('staff.exams.destroy', $exam->id) }}" method="POST" class="d-inline">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Emin misiniz?')">Sil</button>
-                                                    </form> --}}
+                                                    <a href="{{ route('staff.exams.edit', $exam->id) }}" class="btn btn-sm btn-info">Düzenle</a>
+                                                    <a href="{{ route('staff.exams.assign', $exam->id) }}" class="btn btn-sm btn-primary">Öğrenci Ata</a>
                                                 </td>
+
                                             </tr>
                                         @empty
                                             <tr>

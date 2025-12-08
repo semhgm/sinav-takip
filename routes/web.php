@@ -44,6 +44,8 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
     Route::resource('exams', ExamController::class);
     Route::resource('questions', QuestionController::class);
     Route::resource('categories', QuestionCategoryController::class);
+    Route::get('exams/{exam}/assign', [ExamController::class, 'assign'])->name('exams.assign');
+    Route::post('exams/{exam}/assign', [ExamController::class, 'performAssignment'])->name('exams.perform-assignment');
 });
 Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
     Route::get('/dashboard', function () {

@@ -12,5 +12,8 @@ class Exam extends Model
     public function creator(){ return $this->belongsTo(User::class,'created_by'); }
     public function questions(){ return $this->belongsToMany(Question::class,'exam_question')->withPivot('order'); }
     public function sessions(){ return $this->hasMany(ExamSession::class); }
-    public function assignments(){ return $this->hasMany(ExamAssignment::class); }
-}
+    public function assignedUsers()
+    {
+
+        return $this->belongsToMany(User::class, 'exam_assignments', 'exam_id', 'user_id');
+    }}

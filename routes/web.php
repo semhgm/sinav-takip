@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Staff\ExamController;
 use App\Http\Controllers\Staff\QuestionCategoryController;
 use App\Http\Controllers\Staff\QuestionController;
+use App\Http\Controllers\Student\LiveExamController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -51,4 +52,11 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::get('/dashboard', function () {
         return view('backend.pages.student.dashboard');
     })->name('dashboard');
+    Route::get('exams', [\App\Http\Controllers\Student\ExamController::class, 'index'])->name('exams.index');
+    Route::get('exams/show/{exam}', [\App\Http\Controllers\Student\ExamController::class, 'show'])->name('exams.show');
+    Route::post('exams/{exam}/start', [\App\Http\Controllers\Student\ExamController::class, 'startSession'])->name('exams.start-session');
+    Route::get('exam-live/{session}', [LiveExamController::class, 'show'])->name('exam-live');
+    Route::post('exam-live/{session}/save-answer', [LiveExamController::class, 'saveAnswer'])->name('exam-save-answer');
+    Route::post('exam-live/{session}/finish', [LiveExamController::class, 'finishExam'])->name('exams.finish');
+    Route::get('exams/{exam}/results', [\App\Http\Controllers\Student\ExamController::class, 'results'])->name('exams.results');
 });

@@ -122,7 +122,7 @@
 
                 {{-- Mevcut Sınavlar --}}
                 <li class="{{ request()->routeIs('student.exams.available') ? 'active' : '' }}">
-                    <a class="nav-link" href="#">
+                    <a class="nav-link" href="{{route('student.exams.index')}}">
                         <i data-feather="cast"></i><span>Mevcut Sınavlar</span>
                     </a>
                 </li>

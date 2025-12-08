@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Staff\ExamController;
+use App\Http\Controllers\Staff\QuestionCategoryController;
+use App\Http\Controllers\Staff\QuestionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 
-Route::get('home',[\App\Http\Controllers\Controller::class,'home'])->name('home')->middleware(['auth', 'verified']);
+Route::get('',[\App\Http\Controllers\Controller::class,'home'])->name('home')->middleware(['auth', 'verified']);
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
@@ -38,7 +41,9 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
     Route::get('/dashboard', function () {
         return view('backend.pages.staff.dashboard');
     })->name('dashboard');
-    Route::resource('exams', App\Http\Controllers\Staff\ExamController::class);
+    Route::resource('exams', ExamController::class);
+    Route::resource('questions', QuestionController::class);
+    Route::resource('categories', QuestionCategoryController::class);
 });
 Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
     Route::get('/dashboard', function () {

@@ -1,11 +1,13 @@
-// resources/views/backend/pages/staff/exams/index.blade.php örneği
-
-@extends('backend.layout.app') // Ana template'inizi çağırın
+@extends('backend.layout.app')
 
 @section('content')
     <div class="main-content">
         <section class="section">
             <div class="section-body">
+                @if (session('success'))
+                    <div class="alert alert-success">{{ session('success') }}</div>
+                @endif
+
                 <div class="row">
                     <div class="col-12">
                         <div class="card">
@@ -16,8 +18,57 @@
                                 </div>
                             </div>
                             <div class="card-body">
-                                {{-- Buraya sınav tablosu gelecek --}}
-                                <p>Burada tüm oluşturulan sınavlar listelenecek.</p>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover" id="exam-table">
+                                        <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Sınav Adı</th>
+                                            <th>Süre (Dakika)</th>
+                                            <th>Soru Sayısı</th>
+                                            <th>Durum</th>
+                                            <th>Oluşturulma Tarihi</th>
+                                            <th>İşlemler</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        @forelse ($exams as $exam)
+                                            <tr>
+                                                <td>{{ $loop->iteration }}</td>
+                                                <td>{{ $exam->title }}</td>
+                                                <td>{{ $exam->duration_minutes }}</td>
+                                                <td>
+                                                    {{-- İlişkiyi kullanarak o sınava eklenen soru sayısını gösterir --}}
+                                                    {{ $exam->questions->count() }}
+                                                </td>
+                                                <td>
+                                                    @if ($exam->questions->count() > 0)
+                                                        <span class="badge badge-success">Sorular Tamamlandı</span>
+                                                    @else
+                                                        <span class="badge badge-warning">Soru Bekleniyor</span>
+                                                    @endif
+                                                </td>
+                                                <td>{{ $exam->created_at->format('d.m.Y H:i') }}</td>
+                                                <td>
+                                                    {{-- Soru Ekleme Linki (Modül 4'e hazırlık) --}}
+                                                    <a href="{{ route('staff.exams.edit', $exam->id) }}" class="btn btn-sm btn-info">Düzenle</a>
+                                                    <a href="{{ route('staff.questions.create', $exam->id) }}" class="btn btn-sm btn-success">Soruları Ekle/Gör</a>
+                                                    {{-- Silme butonu formu (tercihen AJAX veya confirm ile) --}}
+                                                    {{-- <form action="{{ route('staff.exams.destroy', $exam->id) }}" method="POST" class="d-inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Emin misiniz?')">Sil</button>
+                                                    </form> --}}
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="7" class="text-center">Henüz oluşturulmuş bir sınav bulunmamaktadır.</td>
+                                            </tr>
+                                        @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>

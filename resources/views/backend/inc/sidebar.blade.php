@@ -88,6 +88,9 @@
                         <li class="{{ request()->routeIs('staff.exams.create') ? 'active' : '' }}">
                             <a class="nav-link" href="{{ route('staff.exams.create') }}">Yeni Sınav Oluştur</a>
                         </li>
+                        <li class="{{ request()->routeIs('staff.questions.categories.*') ? 'active' : '' }}">
+                            <a class="nav-link" href="{{route('staff.categories.index')}}">Kategoriler</a>
+                        </li>
                     </ul>
                 </li>
                 {{-- Canlı Takip --}}

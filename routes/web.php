@@ -58,5 +58,5 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::get('exam-live/{session}', [LiveExamController::class, 'show'])->name('exam-live');
     Route::post('exam-live/{session}/save-answer', [LiveExamController::class, 'saveAnswer'])->name('exam-save-answer');
     Route::post('exam-live/{session}/finish', [LiveExamController::class, 'finishExam'])->name('exams.finish');
-    Route::get('exams/{exam}/results', [\App\Http\Controllers\Student\ExamController::class, 'results'])->name('exams.results');
+    Route::get('exams/results/{exam}', [\App\Http\Controllers\Student\ExamController::class, 'results'])->name('exams.results');
 });

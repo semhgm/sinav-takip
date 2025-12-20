@@ -17,13 +17,20 @@
                                 <h5>Soru Navigasyonu</h5>
                                 {{-- **SORU NAVİGASYONU (JS ile doldurulacak)** --}}
                                 <div id="question-navigator" class="btn-group d-flex flex-wrap">
-                                    {{-- Her soru için butonlar buraya gelecek --}}
+                                    @foreach ($questions as $index => $question)
+                                        <button type="button"
+                                                class="btn btn-outline-secondary btn-sm m-1 nav-btn"
+                                                data-index="{{ $index + 1 }}"
+                                                style="width: 35px;">
+                                            {{ $index + 1 }}
+                                        </button>
+                                    @endforeach
                                 </div>
 
                                 <hr>
-                                <form action="{{ route('student.exams.finish', $session->id) }}" method="POST" class="mt-3">
+                                <form id="finish-form" action="{{ route('student.exams.finish', $session->id) }}" method="POST" class="mt-3">
                                     @csrf
-                                    <button type="submit" class="btn btn-danger btn-block" onclick="return confirm('Sınavı bitirmek istediğinizden emin misiniz? Cevaplarınızı tekrar değiştiremezsiniz.')">
+                                    <button type="submit" class="btn btn-danger btn-block">
                                         Sınavı Bitir ve Gönder
                                     </button>
                                 </form>
@@ -91,8 +98,11 @@
     <script>
         // Güvenli kontrol: Eğer end_time null ise, mevcut zamanı 0 olarak kabul eden bir yedek değer kullan.
         @php
-            $endTimeString = $session->ended_at ? $session->ended_at->toIso8601String() : now()->toIso8601String();
-        @endphp
+            use Illuminate\Support\Carbon;
+
+                // ended_at bir string gelse bile Carbon ile nesneye çevirip güvenli hale getiriyoruz
+                $endTime = $session->ended_at ? Carbon::parse($session->ended_at) : now()->addMinutes($exam->duration_minutes);
+                $endTimeString = $endTime->toIso8601String();        @endphp
 
         // Blade'deki JS değişkenini düzeltin
 
@@ -102,6 +112,8 @@
             const finishExamUrl = "{{ route('student.exams.finish', $session->id) }}";
             const endTime = new Date("{{ $endTimeString }}");
             const durationMinutes = {{ $exam->duration_minutes }};
+            let isSubmitting = false; // Formun gönderilip gönderilmediğini takip eder
+
 
             let currentQuestionIndex = 1;
             const totalQuestions = {{ $questions->count() }};
@@ -111,8 +123,22 @@
             const countdownElement = document.getElementById('countdown');
             const currentQNumberElement = document.getElementById('current-q-number');
             const answerInputs = document.querySelectorAll('.answer-input');
+            const preventExit = (e) => {
+                if (!isSubmitting) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            };
+            window.addEventListener('beforeunload', preventExit);
 
-            // --- 1. Soru Navigasyonu Mantığı ---
+            const finishForm = document.querySelector('form[action*="finish"]');
+            if (finishForm) {
+                finishForm.addEventListener('submit', function() {
+                    isSubmitting = true; // Korumayı devre dışı bırak
+                    window.removeEventListener('beforeunload', preventExit);
+                });
+            }
+
 
             function showQuestion(index) {
                 if (index < 1 || index > totalQuestions) return;
@@ -144,7 +170,8 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
                         },
                         body: JSON.stringify({
                             question_id: questionId,
@@ -152,16 +179,14 @@
                         })
                     });
 
-                    const data = await response.json();
-
-                    if (data.success) {
-                        console.log(`Cevap kaydedildi: Soru ID ${questionId}`);
-                        // İstenirse, ilgili soru navigasyon butonunu "Cevaplandı" olarak işaretle
-                    } else {
-                        console.error("Cevap kaydedilirken hata oluştu:", data.message);
+                    const result = await response.json();
+                    if(result.success) {
+                        console.log("Soru " + questionId + " kaydedildi.");
+                        // Opsiyonel: Soru navigasyon butonunu yeşil yap
+                        document.querySelector(`.nav-btn[data-index="${currentQuestionIndex}"]`).classList.replace('btn-outline-secondary', 'btn-success');
                     }
                 } catch (error) {
-                    console.error("AJAX kaydetme hatası:", error);
+                    console.error("Cevap gönderilemedi:", error);
                 }
             }
 
@@ -221,6 +246,12 @@
                 e.returnValue = '';
             });
 
+            function beforeUnloadHandler(e) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+
+            window.addEventListener('beforeunload', beforeUnloadHandler);
         });
     </script>
 @endsection

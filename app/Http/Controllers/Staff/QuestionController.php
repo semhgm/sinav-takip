@@ -71,9 +71,9 @@ class QuestionController extends Controller
 
                 // Cevap anahtarının seçenekler arasında olup olmadığını kontrol edebiliriz (A, B, C, D gibi)
                 $validKeys = array_keys(json_decode($validatedData['options'], true));
-                if (!in_array($validatedData['answer_key'], $validKeys)) {
+                if (!in_array($validatedData['correct_option'], $validKeys)) {
                     throw ValidationException::withMessages([
-                        'answer_key' => ['Doğru Cevap anahtarı girilen seçeneklerden biri olmalıdır.'],
+                        'correct_option' => ['Doğru Cevap anahtarı girilen seçeneklerden biri olmalıdır.'],
                     ]);
                 }
 

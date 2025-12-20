@@ -88,7 +88,8 @@ class ExamController extends Controller
         // 1. Sınav Oturumunu Çekme
         $session = $exam->sessions()
             ->where('user_id', $userId)
-            ->where('status', 'completed') // Sadece tamamlanmış oturumu göster
+            ->where('status', 'completed')
+            ->latest()// Sadece tamamlanmış oturumu göster
             ->first();
 
         // Oturum bulunamadıysa veya tamamlanmamışsa

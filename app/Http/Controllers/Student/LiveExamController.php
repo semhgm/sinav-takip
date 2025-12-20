@@ -41,76 +41,65 @@ class LiveExamController extends Controller
             'proctoringEnabled'
         ));
     }
+
     public function saveAnswer(Request $request, ExamSession $session)
     {
-        // 1. Yetki ve Durum Kontrolü
-        if ($session->user_id !== Auth::id() || $session->is_completed) {
-            return response()->json(['success' => false, 'message' => 'Yetkisiz erişim veya sınav tamamlanmıştır.'], 403);
+        // Rotalarınızda middleware olduğu için burada sadece session kontrolü yeterli
+        if ($session->status !== 'started' || $session->user_id !== auth()->id()) {
+            return response()->json(['success' => false, 'message' => 'Oturum aktif değil.'], 403);
         }
 
-        // 2. Doğrulama (Validation)
         $validated = $request->validate([
             'question_id' => 'required|exists:questions,id',
-            'answer_text' => 'nullable|string', // Cevap metni (çoktan seçmeli seçenek anahtarı veya açık uçlu metin)
+            'answer_text' => 'nullable|string',
         ]);
 
-        // 3. Veri Hazırlama
-        $questionId = $validated['question_id'];
-        $answerText = $validated['answer_text'] ?? null;
+        try {
+            // updateOrCreate kullanarak aynı soruya tekrar cevap verilirse üzerine yazarız
+            $answer = \App\Models\StudentAnswer::updateOrCreate(
+                [
+                    'session_id'  => $session->id,
+                    'question_id' => $validated['question_id'],
+                ],
+                [
+                    'answer_text' => $validated['answer_text'] ?? '',
+                    'is_correct'  => null,
+                    'score'       => 0,
+                ]
+            );
 
-        // Opsiyonel: Sınav süresi dolduysa kaydı engelle
-        if (now()->greaterThan($session->ended_at)) {
-            return response()->json(['success' => false, 'message' => 'Sınav süresi dolmuştur. Cevap kaydedilemez.'], 403);
+            return response()->json([
+                'success' => true,
+                'message' => 'Kaydedildi',
+                'db_id'   => $answer->id
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
-
-        // 4. Cevabı Kaydet veya Güncelle (Upsert Mantığı)
-        // updateOrCreate metodu, mevcut cevabı günceller veya yeni bir tane oluşturur.
-        $answer = StudentAnswer::updateOrCreate(
-            [
-                'session_id' => $session->id,
-                'question_id' => $questionId,
-            ],
-            [
-                'answer_text' => $answerText,
-                // Diğer alanlar (is_correct, score) daha sonra puanlama modülünde doldurulacaktır.
-                // Şimdilik sadece cevabı kaydediyoruz.
-                'is_correct' => null,
-                'score' => null,
-            ]
-        );
-
-        // 5. Başarılı Yanıt Döndürme
-        return response()->json([
-            'success' => true,
-            'message' => 'Cevap başarıyla kaydedildi.',
-            'answer_id' => $answer->id,
-            'question_id' => $questionId // JS'in hangi soruya ait olduğunu bilmesi için
-        ]);
     }
+
     public function finishExam(ExamSession $session)
     {
-        // Yetki kontrolü
         if ($session->user_id !== Auth::id()) {
             abort(403);
         }
 
-        if ($session->is_completed) {
-            return redirect()->route('student.exams.results', $session->exam_id);
+        // Eğer zaten tamamlanmışsa doğrudan sonuçlara git
+        if ($session->status === 'completed' || $session->status === 'graded') {
+            return redirect()->route('student.exams.results', $session->id);
         }
 
-        // Oturumu tamamlandı olarak işaretle
+        // Şemadaki 'status' enum yapısına göre güncelliyoruz
         $session->update([
-            'is_completed' => true,
             'status' => 'completed',
-            'actual_end_time' => now(),
+            'ended_at' => now(), // actual_end_time yerine şemadaki ended_at'i kullanın
         ]);
 
-        // Puanlama Modülü (Modül 8) burada tetiklenecek.
 
+        // Rota ismine ve beklediği parametreye (exam) göre yönlendiriyoruz
         return redirect()->route('student.exams.results', $session->exam_id)
             ->with('success', 'Sınav başarıyla tamamlandı.');
     }
-
 
 
 }

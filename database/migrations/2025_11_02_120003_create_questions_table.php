@@ -17,7 +17,7 @@ return new class extends Migration
             $table->enum('type', ['multiple_choice','open_ended'])->default('multiple_choice');
             $table->text('text');
             $table->json('options')->nullable();
-            $table->string('correct_option', 10)->nullable();
+            $table->string('correct_option', 255)->nullable();
             $table->text('feedback')->nullable();
             $table->timestamps();
         });

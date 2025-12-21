@@ -18,6 +18,7 @@ return new class extends Migration
             $table->text('text');
             $table->json('options')->nullable();
             $table->string('correct_option', 255)->nullable();
+            $table->decimal('points', 5, 2)->default(10);
             $table->text('feedback')->nullable();
             $table->timestamps();
         });

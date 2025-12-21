@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('exam_id')->constrained('exams')->cascadeOnDelete();
             $table->dateTime('started_at')->nullable();
             $table->dateTime('ended_at')->nullable();
-            $table->decimal('score',5,2)->nullable();
+            $table->decimal('score', 5, 2)->nullable(); // Öğrencinin bu sorudan aldığı puan
             $table->enum('status', ['started','completed','graded'])->default('started');
             $table->timestamps();
         });

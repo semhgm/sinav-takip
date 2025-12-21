@@ -80,26 +80,52 @@ class LiveExamController extends Controller
 
     public function finishExam(ExamSession $session)
     {
-        if ($session->user_id !== Auth::id()) {
+        if ($session->user_id !== auth()->id()) {
             abort(403);
         }
 
-        // Eğer zaten tamamlanmışsa doğrudan sonuçlara git
-        if ($session->status === 'completed' || $session->status === 'graded') {
-            return redirect()->route('student.exams.results', $session->id);
+        if ($session->status === 'completed') {
+            return redirect()->route('student.exams.results', $session->exam_id);
         }
 
-        // Şemadaki 'status' enum yapısına göre güncelliyoruz
+        // 1. Oturumu kapat
         $session->update([
             'status' => 'completed',
-            'ended_at' => now(), // actual_end_time yerine şemadaki ended_at'i kullanın
+            'ended_at' => now(),
         ]);
 
+        // 2. OTOMATİK PUANLAMA (Çoktan Seçmeli Sorular İçin)
+        $this->autoGradeSession($session);
 
-        // Rota ismine ve beklediği parametreye (exam) göre yönlendiriyoruz
         return redirect()->route('student.exams.results', $session->exam_id)
-            ->with('success', 'Sınav başarıyla tamamlandı.');
+            ->with('success', 'Sınav başarıyla tamamlandı ve puanlanabilir sorular hesaplandı.');
     }
 
+    // LiveExamController.php içindeki puanlama kısmı
+    private function autoGradeSession(ExamSession $session)
+    {
+        $studentAnswers = $session->studentAnswers()->with('question')->get();
+        $totalSessionScore = 0;
+
+        foreach ($studentAnswers as $answer) {
+            $question = $answer->question;
+
+            if ($question->type === 'multiple_choice') {
+                $isCorrect = ($answer->answer_text === $question->correct_option);
+
+                $questionPoints = $question->points;
+                $calculatedScore = $isCorrect ? $questionPoints : 0;
+
+                $answer->update([
+                    'is_correct' => $isCorrect,
+                    'score' => $calculatedScore
+                ]);
+
+                $totalSessionScore += $calculatedScore;
+            }
+        }
+
+        $session->update(['score' => $totalSessionScore]);
+    }
 
 }

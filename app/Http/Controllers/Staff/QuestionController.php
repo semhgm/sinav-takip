@@ -47,56 +47,48 @@ class QuestionController extends Controller
     public function store(Request $request)
     {
         try {
-            // 1. Doğrulama (Validation)
+            // 1. Doğrulama (points eklendi)
             $validatedData = $request->validate([
-                'category_id' => 'required|exists:question_categories,id', // Kategori var mı?
-                'type'        => 'required|in:multiple_choice,open_ended', // Tanımlı tiplerden biri mi?
-                'text'        => 'required|string', // Soru metni
-                'options'     => 'nullable|array', // Seçenekler (Çoktan seçmeli için zorunlu olacak)
-                'correct_option'  => 'required|string',
-                ]);
+                'category_id'    => 'required|exists:question_categories,id',
+                'type'           => 'required|in:multiple_choice,open_ended',
+                'text'           => 'required|string',
+                'options'        => 'nullable|array',
+                'correct_option' => 'required|string',
+                'points'         => 'required|numeric|min:0|max:100',
+            ]);
 
-            // 2. Çoktan Seçmeli İçin Ek Kontrol ve Veri İşleme
+            // 2. Çoktan Seçmeli İşlemleri
             if ($validatedData['type'] === 'multiple_choice') {
-
-                // Seçeneklerin varlığını ve formatını kontrol et
                 if (!isset($validatedData['options']) || count($validatedData['options']) < 2) {
                     throw ValidationException::withMessages([
                         'options' => ['Çoktan Seçmeli soru tipi için en az 2 seçenek girilmelidir.'],
                     ]);
                 }
 
-                // options alanını JSON olarak kaydetmek için hazırlayalım
                 $validatedData['options'] = json_encode($validatedData['options']);
 
-                // Cevap anahtarının seçenekler arasında olup olmadığını kontrol edebiliriz (A, B, C, D gibi)
                 $validKeys = array_keys(json_decode($validatedData['options'], true));
                 if (!in_array($validatedData['correct_option'], $validKeys)) {
                     throw ValidationException::withMessages([
                         'correct_option' => ['Doğru Cevap anahtarı girilen seçeneklerden biri olmalıdır.'],
                     ]);
                 }
-
             } elseif ($validatedData['type'] === 'open_ended') {
-                // Açık uçlu sorularda seçenek alanı boş olmalı
                 $validatedData['options'] = null;
             }
 
-
             // 3. Veritabanına Kaydetme
+            // Not: Question modelinde $fillable içine 'points' eklediğinden emin ol!
             Question::create($validatedData);
 
-            // 4. Başarıyla Yönlendirme
             return redirect()
-                ->route('staff.questions.index') // Soruların listelendiği sayfaya yönlendir
-                ->with('success', 'Soru başarıyla oluşturuldu ve havuza eklendi.');
+                ->route('staff.questions.index')
+                ->with('success', 'Soru (' . $validatedData['points'] . ' Puan) başarıyla havuzuna eklendi.');
 
         } catch (ValidationException $e) {
-            // Hata durumunda formu geri döndür
             return back()->withErrors($e->errors())->withInput();
         }
     }
-
     /**
      * Display the specified resource.
      */

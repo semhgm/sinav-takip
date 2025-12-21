@@ -17,6 +17,7 @@
                                 <h5>Soru Navigasyonu</h5>
                                 {{-- **SORU NAVİGASYONU (JS ile doldurulacak)** --}}
                                 <div id="question-navigator" class="btn-group d-flex flex-wrap">
+
                                     @foreach ($questions as $index => $question)
                                         <button type="button"
                                                 class="btn btn-outline-secondary btn-sm m-1 nav-btn"
@@ -47,12 +48,22 @@
 
                                 @foreach ($questions as $index => $question)
                                     @php
-                                        // Öğrencinin daha önce kaydettiği cevap
                                         $savedAnswer = $studentAnswers->get($question->id);
                                         $questionIndex = $index + 1;
+
+                                        // options string (json) geliyorsa array'e çevir
+                                        $options = $question->options;
+                                        if (is_string($options)) {
+                                            $options = json_decode($options, true);
+                                        }
+                                        if (!is_array($options)) {
+                                            $options = [];
+                                        }
                                     @endphp
 
-                                    <div class="question-container" data-question-id="{{ $question->id }}" data-index="{{ $questionIndex }}"
+                                    <div class="question-container"
+                                         data-question-id="{{ $question->id }}"
+                                         data-index="{{ $questionIndex }}"
                                          style="{{ $questionIndex == 1 ? '' : 'display:none;' }}">
 
                                         <div class="question-text mb-4">
@@ -62,24 +73,29 @@
                                         <div class="answer-area" data-type="{{ $question->type }}">
                                             @if ($question->type === 'multiple_choice')
                                                 <h6>Seçenekler:</h6>
-                                                @foreach ($question->options as $key => $optionText)
+
+                                                @foreach ($options as $key => $optionText)
                                                     <div class="form-check">
                                                         <input class="form-check-input answer-input" type="radio"
-                                                               name="answer_{{ $question->id }}" id="q_{{ $question->id }}_opt_{{ $key }}"
+                                                               name="answer_{{ $question->id }}"
+                                                               id="q_{{ $question->id }}_opt_{{ $key }}"
                                                                value="{{ $key }}"
                                                                data-question-id="{{ $question->id }}"
-                                                            @checked($savedAnswer && $savedAnswer->answer_text === $key)>
+                                                            @checked($savedAnswer && $savedAnswer->answer_text === (string)$key)>
+
                                                         <label class="form-check-label" for="q_{{ $question->id }}_opt_{{ $key }}">
-                                                            **{{ $key }})** {{ $optionText }}
+                                                            <strong>{{ $key }})</strong> {{ $optionText }}
                                                         </label>
                                                     </div>
                                                 @endforeach
+
                                             @elseif ($question->type === 'open_ended')
                                                 <h6>Cevabınız:</h6>
                                                 <textarea class="form-control answer-input" rows="5"
                                                           data-question-id="{{ $question->id }}">{{ $savedAnswer->answer_text ?? '' }}</textarea>
                                             @endif
                                         </div>
+
                                     </div>
                                 @endforeach
 

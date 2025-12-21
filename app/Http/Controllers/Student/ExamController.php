@@ -83,40 +83,43 @@ class ExamController extends Controller
     }
     public function results(Exam $exam)
     {
-        $userId = Auth::id();
+        $userId = auth()->id();
 
-        // 1. Sınav Oturumunu Çekme
         $session = $exam->sessions()
             ->where('user_id', $userId)
             ->where('status', 'completed')
-            ->latest()// Sadece tamamlanmış oturumu göster
+            ->latest('ended_at') // daha doğru: en son biten oturum
             ->first();
 
-        // Oturum bulunamadıysa veya tamamlanmamışsa
         if (!$session) {
-            return redirect()->route('student.exams.index')->with('error', 'Bu sınav için tamamlanmış bir oturum bulunamadı.');
+            return redirect()->route('student.exams.index')
+                ->with('error', 'Tamamlanmış sınav bulunamadı.');
         }
 
-        // 2. Cevapları ve Puanları Çekme
-        // Puanlama Modülü (Modül 8) tamamlanana kadar buradaki değerler null olacaktır.
         $totalQuestions = $exam->questions()->count();
+
+        // Cevapları al
         $studentAnswers = $session->studentAnswers;
 
-        // Hesaplamalar (Puanlama yapılana kadar geçicidir)
-        $answeredCount = $studentAnswers->count();
-        // Aşağıdaki iki değer, puanlama yapıldıktan sonra geçerli olacaktır.
-        $correctCount = $studentAnswers->where('is_correct', true)->count();
-        $totalScore = $studentAnswers->sum('score');
+        // ✅ Cevaplanan soru sayısı (boş string/boşluk sayma)
+        $answeredCount = $studentAnswers
+            ->filter(fn($a) => trim((string)($a->answer_text ?? '')) !== '')
+            ->count();
 
-        // Oturum tamamlanmamışsa, süre dolmuştur uyarısı verilebilir.
+        // Doğru / yanlış / bekleyen
+        $correctCount = $studentAnswers->where('is_correct', true)->count();
+        $wrongCount   = $studentAnswers->where('is_correct', false)->whereNotNull('is_correct')->count();
+        $pendingCount = $studentAnswers->whereNull('is_correct')->count(); // açık uçlular vs.
 
         return view('backend.pages.student.exams.results', compact(
             'exam',
             'session',
             'totalQuestions',
-            'answeredCount',
+            'answeredCount',   // ✅ bunu ekledik
             'correctCount',
-            'totalScore'
+            'wrongCount',
+            'pendingCount'
         ));
     }
+
 }

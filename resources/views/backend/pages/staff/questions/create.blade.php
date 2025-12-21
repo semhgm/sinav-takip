@@ -37,6 +37,23 @@
 
                         <div id="dynamic_options_area">
                         </div>
+                        <div class="form-group col-md-6">
+                            <label for="points">Soru Puan Değeri</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                </div>
+                                <input type="number" step="0.5" name="points" id="points"
+                                       class="form-control @error('points') is-invalid @enderror"
+                                       value="{{ old('points', 10) }}" placeholder="Örn: 10">
+                                @error('points')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <small class="text-muted">Bu soru doğru cevaplandığında öğrencinin alacağı ham puan.</small>
+                        </div>
 
                         <button type="submit" class="btn btn-primary mt-3">Soruyu Kaydet</button>
                     </form>
@@ -51,39 +68,46 @@
             const optionsArea = document.getElementById('dynamic_options_area');
 
             function renderOptions(type) {
-                optionsArea.innerHTML = ''; // Önceki içeriği temizle
+                optionsArea.innerHTML = '';
 
                 if (type === 'multiple_choice') {
                     optionsArea.innerHTML = `
-                <hr>
-                <h5>Seçenekler ve Doğru Cevap</h5>
-                <div class="form-group">
+            <hr>
+            <h5>Seçenekler ve Doğru Cevap</h5>
+            <div class="row">
+                <div class="form-group col-6">
                     <label>Seçenek A</label><input type="text" name="options[A]" class="form-control" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group col-6">
                     <label>Seçenek B</label><input type="text" name="options[B]" class="form-control" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group col-6">
                     <label>Seçenek C</label><input type="text" name="options[C]" class="form-control" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group col-6">
                     <label>Seçenek D</label><input type="text" name="options[D]" class="form-control" required>
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <label for="correct_option">Doğru Cevap (A/B/C/D)</label>
-                    <input type="text" name="answer_key" class="form-control" placeholder="Örn: A" required>
-                </div>
-            `;
+            <div class="form-group">
+                <label for="correct_option">Doğru Cevap Anahtarı</label>
+                <select name="correct_option" class="form-control" required>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                </select>
+            </div>
+        `;
                 } else if (type === 'open_ended') {
                     optionsArea.innerHTML = `
-                <hr>
-                <h5>Beklenen Cevap</h5>
-                <div class="form-group">
-                    <label for="answer_key">Beklenen Cevap Metni</label>
-                    <textarea name="correct_option" class="form-control" placeholder="Öğrencinin vermesi beklenen kısa cevabı girin"></textarea>
-                </div>
-            `;
+            <hr>
+            <h5>Beklenen Cevap</h5>
+            <div class="form-group">
+                <label for="correct_option">Beklenen Cevap Metni (Referans)</label>
+                <textarea name="correct_option" class="form-control" placeholder="Öğrencinin vermesi beklenen cevabı girin" required></textarea>
+            </div>
+        `;
                 }
             }
 

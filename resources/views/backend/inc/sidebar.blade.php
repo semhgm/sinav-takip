@@ -75,6 +75,24 @@
             @if(auth()->user()->role === 'staff')
                 <li class="menu-header">Sınav Takip ve Gözetim</li>
 
+                {{-- Sınav İşlemleri (Önce Admin'deydi, şimdi Staff'e geldi) --}}
+                {{-- Aktiflik kontrolü artık 'staff.exams.*' rotaları üzerinden yapılır --}}
+                <li class="dropdown {{ request()->routeIs('staff.exams.*') ? 'active' : '' }}">
+                    <a href="#" class="menu-toggle nav-link has-dropdown">
+                        <i data-feather="clipboard"></i><span>Sınavlar</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li class="{{ request()->routeIs('staff.exams.index') ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ route('staff.exams.index') }}">Tüm Sınavlar</a>
+                        </li>
+                        <li class="{{ request()->routeIs('staff.exams.create') ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ route('staff.exams.create') }}">Yeni Sınav Oluştur</a>
+                        </li>
+                        <li class="{{ request()->routeIs('staff.questions.categories.*') ? 'active' : '' }}">
+                            <a class="nav-link" href="{{route('staff.categories.index')}}">Kategoriler</a>
+                        </li>
+                    </ul>
+                </li>
                 {{-- Canlı Takip --}}
                 <li class="{{ request()->routeIs('staff.live.monitor') ? 'active' : '' }}">
                     <a class="nav-link" href="#">
@@ -104,7 +122,7 @@
 
                 {{-- Mevcut Sınavlar --}}
                 <li class="{{ request()->routeIs('student.exams.available') ? 'active' : '' }}">
-                    <a class="nav-link" href="#">
+                    <a class="nav-link" href="{{route('student.exams.index')}}">
                         <i data-feather="cast"></i><span>Mevcut Sınavlar</span>
                     </a>
                 </li>

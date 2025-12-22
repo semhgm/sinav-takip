@@ -19,6 +19,7 @@ return new class extends Migration
             $table->dateTime('ended_at')->nullable();
             $table->decimal('score', 5, 2)->nullable(); // Öğrencinin bu sorudan aldığı puan
             $table->enum('status', ['started','completed','graded'])->default('started');
+            $table->string('proctor_token')->nullable()->unique();
             $table->timestamps();
         });
     }

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ExamSession extends Model
 {
-    protected $fillable = ['user_id','exam_id','started_at','ended_at','score','status'];
+    protected $fillable = ['user_id','exam_id','started_at','ended_at','score','status','proctor_token'];
     protected $casts = [
         'started_at' => 'datetime',
         'ended_at' => 'datetime',

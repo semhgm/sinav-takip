@@ -70,12 +70,12 @@ class ExamController extends Controller
 
         // Yeni Oturum Başlatma
         $session = $exam->sessions()->create([
-            'user_id' => $userId,
-            'started_at' => now(), // Sınav başlangıç zamanı
-            'ended_at' => now()->addMinutes($exam->duration_minutes), // Bitiş zamanını hesapla
-            'status' => 'started',
-            'is_completed' => false,
-            // session_token alanı da burada oluşturulabilir (güvenlik için)
+            'user_id'       => $userId,
+            'started_at'    => now(),
+            'ended_at'      => now()->addMinutes($exam->duration_minutes),
+            'status'        => 'started',
+            'is_completed'  => false,
+            'proctor_token' => Str::random(40),
         ]);
 
         // Sınavın asıl yapılacağı canlı sayfaya yönlendirme

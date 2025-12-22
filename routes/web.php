@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Staff\ExamController;
+use App\Http\Controllers\Staff\ProctorController;
 use App\Http\Controllers\Staff\QuestionCategoryController;
 use App\Http\Controllers\Staff\QuestionController;
 use App\Http\Controllers\Student\LiveExamController;
@@ -60,3 +61,8 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::post('exam-live/{session}/finish', [LiveExamController::class, 'finishExam'])->name('exams.finish');
     Route::get('exams/results/{exam}', [\App\Http\Controllers\Student\ExamController::class, 'results'])->name('exams.results');
 });
+
+Route::post('/proctor/event', [ProctorController::class, 'storeEvent']);
+Route::post('/proctor/heartbeat', [ProctorController::class, 'heartbeat']);
+Route::post('/proctor/finish', [ProctorController::class, 'finish']);
+

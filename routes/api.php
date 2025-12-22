@@ -20,4 +20,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 Route::post('/proctor/event', [ProctorController::class, 'storeEvent']);
 Route::post('/proctor/heartbeat', [ProctorController::class, 'heartbeat']);
-Route::post('/proctor/finish', [ProctorController::class, 'finish']);
+Route::post('/proctor/snapshot', [ProctorController::class, 'storeSnapshot']);

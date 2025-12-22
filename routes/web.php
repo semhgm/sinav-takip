@@ -7,6 +7,7 @@ use App\Http\Controllers\Staff\QuestionCategoryController;
 use App\Http\Controllers\Staff\QuestionController;
 use App\Http\Controllers\Student\LiveExamController;
 use Illuminate\Support\Facades\Route;
+use MongoDB\Client;
 
 /*
 |--------------------------------------------------------------------------
@@ -62,7 +63,10 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::get('exams/results/{exam}', [\App\Http\Controllers\Student\ExamController::class, 'results'])->name('exams.results');
 });
 
-Route::post('/proctor/event', [ProctorController::class, 'storeEvent']);
-Route::post('/proctor/heartbeat', [ProctorController::class, 'heartbeat']);
-Route::post('/proctor/finish', [ProctorController::class, 'finish']);
 
+Route::get('/mongo-test', function () {
+    $mongo = new Client("mongodb://127.0.0.1:27017");
+    $db = $mongo->selectDatabase('proctoring');
+    $db->selectCollection('test')->insertOne(['hello' => 'world', 't' => now()->toDateTimeString()]);
+    return "mongo ok";
+});

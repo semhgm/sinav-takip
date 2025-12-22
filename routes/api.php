@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Staff\ProctorController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,3 +18,6 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+Route::post('/proctor/event', [ProctorController::class, 'storeEvent']);
+Route::post('/proctor/heartbeat', [ProctorController::class, 'heartbeat']);
+Route::post('/proctor/finish', [ProctorController::class, 'finish']);

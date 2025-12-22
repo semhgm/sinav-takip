@@ -1,13 +1,15 @@
 <?php
 
 namespace App\Http\Controllers\Staff;
+
+use App\Http\Controllers\Controller;
 use App\Models\ExamSession;
 use App\Models\Violation;
 use App\Models\MongoCorrelation;
 use App\Models\SessionHeartbeat;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use MongoDB\Client as MongoClient;
+use Illuminate\Support\Str;
 
 class ProctorController extends Controller
 {

@@ -17,3 +17,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+tools/proctor_agent/.venv/
+tools/proctor_agent/__pycache__/
+tools/proctor_agent/snapshots/
+tools/proctor_agent/*.jpg

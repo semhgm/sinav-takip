@@ -67,18 +67,22 @@ class ProctorController extends Controller
 
     public function heartbeat(Request $request)
     {
-        $validated = $request->validate([
-            'token' => 'required|string',
-        ]);
+        $session = ExamSession::where('proctor_token', $request->token)->first();
 
-        $session = ExamSession::where('proctor_token', $validated['token'])->firstOrFail();
+        if (!$session || $session->status !== 'started') {
+            return response()->json([
+                'active' => false
+            ]);
+        }
 
         SessionHeartbeat::create([
             'session_id' => $session->id,
-            'beat_at'    => now(),
+            'beat_at' => now(),
         ]);
 
-        return response()->json(['ok' => true]);
+        return response()->json([
+            'active' => true
+        ]);
     }
     public function storeSnapshot(Request $request)
     {

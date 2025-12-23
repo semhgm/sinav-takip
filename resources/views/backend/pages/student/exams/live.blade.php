@@ -118,10 +118,53 @@
 
                 // ended_at bir string gelse bile Carbon ile nesneye çevirip güvenli hale getiriyoruz
                 $endTime = $session->ended_at ? Carbon::parse($session->ended_at) : now()->addMinutes($exam->duration_minutes);
-                $endTimeString = $endTime->toIso8601String();        @endphp
+                $endTimeString = $endTime->toIso8601String();
+                @endphp
 
         // Blade'deki JS değişkenini düzeltin
+        window.PROCTOR_TOKEN = "{{ $session->proctor_token }}";
+        const AGENT_BASE = "http://127.0.0.1:5454";
 
+        function stopAgent() {
+            try {
+                const payload = JSON.stringify({ token: window.PROCTOR_TOKEN });
+                const blob = new Blob([payload], { type: "application/json" });
+                navigator.sendBeacon(`${AGENT_BASE}/stop`, blob);
+            } catch (e) {}
+        }
+        async function ensureAgentRunning() {
+            try {
+                // Agent var mı?
+                const ping = await fetch("http://127.0.0.1:5454/ping", {
+                    method: "GET",
+                    cache: "no-store"
+                });
+
+                if (!ping.ok) throw new Error();
+
+                // Token gönder → agent başlasın
+                const start = await fetch("http://127.0.0.1:5454/start", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        token: window.PROCTOR_TOKEN
+                    })
+                });
+
+                if (!start.ok) throw new Error();
+
+                console.log("✅ Proctor Agent aktif");
+
+            } catch (e) {
+                alert(
+                    "Gözetim yazılımı çalışmıyor.\n\n" +
+                    "Lütfen agent’ı başlatın ve sayfayı yenileyin."
+                );
+                window.location.href = "{{ route('student.exams.index') }}";
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", ensureAgentRunning);
         document.addEventListener('DOMContentLoaded', function () {
             // API Uç Noktaları ve Sınav Bilgileri
             const saveAnswerUrl = "{{ route('student.exam-save-answer', $session->id) }}";
@@ -139,6 +182,8 @@
             const countdownElement = document.getElementById('countdown');
             const currentQNumberElement = document.getElementById('current-q-number');
             const answerInputs = document.querySelectorAll('.answer-input');
+
+
             const preventExit = (e) => {
                 if (!isSubmitting) {
                     e.preventDefault();
@@ -146,12 +191,14 @@
                 }
             };
             window.addEventListener('beforeunload', preventExit);
+            window.addEventListener("pagehide", stopAgent);   // mobil/modern
+            window.addEventListener("beforeunload", stopAgent); // klasik
 
-            const finishForm = document.querySelector('form[action*="finish"]');
+            const finishForm = document.getElementById('finish-form');
+
             if (finishForm) {
-                finishForm.addEventListener('submit', function() {
-                    isSubmitting = true; // Korumayı devre dışı bırak
-                    window.removeEventListener('beforeunload', preventExit);
+                finishForm.addEventListener('submit', function () {
+                    stopAgent(); // 👈 NET VE GARANTİLİ
                 });
             }
 
@@ -227,6 +274,11 @@
                     });
                 }
             });
+            if (finishForm) {
+                finishForm.addEventListener('submit', function () {
+                    stopAgent(); // 👈 NET VE GARANTİLİ
+                });
+            }
 
             // --- 3. Zamanlayıcı Mantığı ---
 
@@ -269,5 +321,8 @@
 
             window.addEventListener('beforeunload', beforeUnloadHandler);
         });
+
+
+
     </script>
 @endsection
